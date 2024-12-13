@@ -21,21 +21,82 @@ const commonHeaders = () => {
     axios.defaults.withCredentials = true;
 };
 
-const handleUnauthorized = () => {
+let isRefreshing = false;
+let refreshSubscribers: ((token: string) => void)[] = [];
+
+const subscribeTokenRefresh = (cb: (token: string) => void) => {
+    refreshSubscribers.push(cb);
+};
+
+const onTokenRefreshed = (token: string) => {
+    refreshSubscribers.map(cb => cb(token));
+};
+
+const refreshAuthToken = async () => {
+    try {
+        const response = await axios.post('/admin/refresh-token');
+        const { token } = response.data;
+        localStorage.setItem('authToken', token);
+        return token;
+    } catch (error) {
+        throw error;
+    }
+};
+
+axios.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const originalRequest = error.config;
+        if (error.response.status === 401 && !originalRequest._retry) {
+            if (isRefreshing) {
+                return new Promise((resolve) => {
+                    subscribeTokenRefresh((token: string) => {
+                        originalRequest.headers['Authorization'] = 'Bearer ' + token;
+                        resolve(axios(originalRequest));
+                    });
+                });
+            }
+
+            originalRequest._retry = true;
+            isRefreshing = true;
+
+            try {
+                const newToken = await refreshAuthToken();
+                axios.defaults.headers.common['Authorization'] = 'Bearer ' + newToken;
+                originalRequest.headers['Authorization'] = 'Bearer ' + newToken;
+                onTokenRefreshed(newToken);
+                return axios(originalRequest);
+            } catch (refreshError) {
+                handleUnauthorized(error.response);
+                return Promise.reject(refreshError);
+            } finally {
+                isRefreshing = false;
+                refreshSubscribers = [];
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
+const handleUnauthorized = (response: any) => {
+    if (response.data.message == 'Invalid Login Credentials..!!') {
+        toast.error(response.data.message);
+        return
+    }
     toast.error('Session expired. Please login again.');
     store.dispatch(logdedOutAdmin());
     // store.dispatch(logdedOutUser());
-    window.location.href = '/user/login';
+    window.location.href = '/login';
 };
 
-const errorHandler = (error:any) => {
+const errorHandler = (error: any) => {
     if (import.meta.env.VITE_LOG_ERRORS_IN_CONSOLE === 'true') {
         console.error('API Error:', error);
     }
 
     if (error.response) {
         if (error.response.status === 401) {
-            handleUnauthorized();
+            handleUnauthorized(error.response);
         } else {
             toast.error(error.response.data.message || 'An error occurred');
         }
@@ -49,21 +110,21 @@ const errorHandler = (error:any) => {
 };
 
 const AxiosHelper = {
-    getData: async (url:any, params = null) => {
+    getData: async (url: any, params = null) => {
         commonHeaders();
         return axios.get(url, { params }).catch(errorHandler);
     },
-    postData: async (url:any, data:any, isMultipart = false) => {
+    postData: async (url: any, data: any, isMultipart = false) => {
         commonHeaders();
         const headers = isMultipart ? { "Content-Type": "multipart/form-data" } : { "Content-Type": "application/json" };
         return axios.post(url, data, { headers }).catch(errorHandler);
     },
-    putData: async (url:any, data:any, isMultipart = false) => {
+    putData: async (url: any, data: any, isMultipart = false) => {
         commonHeaders();
         const headers = isMultipart ? { "Content-Type": "multipart/form-data" } : { "Content-Type": "application/json" };
         return axios.put(url, data, { headers }).catch(errorHandler);
     },
-    deleteData: async (url:any) => {
+    deleteData: async (url: any) => {
         commonHeaders();
         return axios.delete(url).catch(errorHandler);
     }

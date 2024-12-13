@@ -248,11 +248,13 @@ const SignIn: React.FC = () => {
                 </div>
 
                 <div className="mb-5">
-                  <input
+                  <button
                     type="submit"
-                    value="Sign In"
                     className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90"
-                  />
+                    >
+                    Sign In
+                  </button>
+
                 </div>
                 <div className="mt-6 text-center">
                   <p>

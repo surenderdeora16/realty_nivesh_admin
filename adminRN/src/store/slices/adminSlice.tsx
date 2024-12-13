@@ -12,11 +12,11 @@ interface AdminState {
 }
 
 const initialState: AdminState = {
-    isLoggedIn: false,
-    name: '',
-    email: '',
-    mobile: '',
-    image: '',
+    isLoggedIn: localStorage.getItem('isLoggedIn') === 'true',
+    name: localStorage.getItem('adminName') || '',
+    email: localStorage.getItem('adminEmail') || '',
+    mobile: localStorage.getItem('adminMobile') || '',
+    image: localStorage.getItem('adminImage') || '',
     loading: false,
     error: null,
 };
@@ -26,8 +26,13 @@ export const loginAdmin = createAsyncThunk(
     async (credentials: { mobile: string; password: string }, { rejectWithValue }) => {
         try {
             const response = await AxiosHelper.postData('/admin/login', credentials);
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('adminName', response.data.name);
+            localStorage.setItem('adminEmail', response.data.email);
+            localStorage.setItem('adminMobile', response.data.mobile);
+            localStorage.setItem('adminImage', response.data.image);
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             return rejectWithValue(error.response.data);
         }
     }
@@ -38,8 +43,13 @@ export const logoutAdmin = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             await AxiosHelper.getData('/admin/logout');
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('adminName');
+            localStorage.removeItem('adminEmail');
+            localStorage.removeItem('adminMobile');
+            localStorage.removeItem('adminImage');
             return null;
-        } catch (error:any) {
+        } catch (error: any) {
             return rejectWithValue(error.response.data);
         }
     }
@@ -51,7 +61,7 @@ export const fetchAdminProfile = createAsyncThunk(
         try {
             const response = await AxiosHelper.getData('/admin/profile');
             return response.data;
-        } catch (error:any) {
+        } catch (error: any) {
             return rejectWithValue(error.response.data);
         }
     }

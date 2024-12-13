@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { Outlet } from 'react-router-dom';
 import { updateAdmin } from '../redux/admin/adminSlice';
 import AxiosHelper from '../helper/AxiosHelper';
 import Header from '../components/Header/index';
@@ -9,7 +8,7 @@ import ProtectedRoute from '../ProtectedRoute';
 
 import Loader from '../common/Loader';
 
-const DefaultLayout: React.FC = () => {
+const AdminLayout: React.FC<{ children: ReactNode }> = ({ children }) => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -34,7 +33,7 @@ const DefaultLayout: React.FC = () => {
   if (loading) return <Loader />;
 
   return (
-    <ProtectedRoute requiredRole="admin">
+    // <ProtectedRoute requiredRole="admin">
       <div className="dark:bg-boxdark-2 dark:text-bodydark">
         <div className="flex h-screen overflow-hidden">
           <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
@@ -42,14 +41,14 @@ const DefaultLayout: React.FC = () => {
             <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
             <main>
               <div className="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
-                <Outlet />
+                {children}
               </div>
             </main>
           </div>
         </div>
       </div>
-    </ProtectedRoute>
+    // </ProtectedRoute>
   );
 };
 
-export default DefaultLayout;
+export default AdminLayout;

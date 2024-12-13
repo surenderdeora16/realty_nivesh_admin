@@ -31,9 +31,9 @@ exports.login = async (req, res) => {
                 'data': { user }
             });
         } else {
-            return res.json({
+            return res.status(401).json({
                 'status': false,
-                'message': "Invalid Credentials..!!",
+                'message': "Invalid Login Credentials..!!",
                 'data': []
             });
         }
