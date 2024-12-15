@@ -1,11 +1,9 @@
 import { Route, Routes, Navigate } from 'react-router-dom';
-import SignIn from './pages/Authentication/SignIn';
-import SignUp from './pages/Authentication/SignUp';
 import PageTitle from './components/PageTitle';
 import AdminLayout from './layout/AdminLayout';
 import ECommerce from './pages/Dashboard/ECommerce';
 import Calendar from './pages/Calendar';
-import Profile from './pages/Profile';
+import Profile from './pages/Profile/Profile';
 import FormElements from './pages/Form/FormElements';
 import FormLayout from './pages/Form/FormLayout';
 import Chart from './pages/Chart';
