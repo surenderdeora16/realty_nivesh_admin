@@ -1,4 +1,5 @@
 const { Admin, UserOTP } = require("../../models");
+const bcrypt = require('bcrypt');
 const { sendSms, generateOTP } = require("../../helpers");
 const Storage = require('../../helpers/Storage');
 const { getCookiesConfig } = require("../../helpers/formValidConfig");
@@ -209,8 +210,8 @@ exports.changePassword = async (req, res) => {
                 'data': []
             });
 
-        req.admin.password = bcrypt.hashSync(password, 10);
-        await req.admin.save();
+        await req.admin.updateOne({ password: bcrypt.hashSync(new_password, 10) });
+      
         return res.json({
             status: true,
             message: "Password Changed Successfully..!!",

@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import AxiosHelper from '../../helper/AxiosHelper';
 
 interface AdminState {
+    data: any;
     isLoggedIn: boolean;
     name: string;
     email: string;
@@ -20,6 +21,23 @@ const initialState: AdminState = {
     loading: false,
     error: null,
 };
+
+const retryRequest = async (fn: () => Promise<any>, retries: number) => {
+    let attempt = 0;
+    while (attempt < retries) {
+        try {
+            return await fn();
+        } catch (error: any) {
+            if (attempt < retries - 1 && error?.response?.status >= 500) {
+                await new Promise(resolve => setTimeout(resolve, (attempt + 1) * 1000)); // Exponential backoff
+                attempt++;
+            } else {
+                throw error;
+            }
+        }
+    }
+};
+
 
 export const loginAdmin = createAsyncThunk(
     'admin/login',
@@ -59,7 +77,7 @@ export const fetchAdminProfile = createAsyncThunk(
     'admin/fetchProfile',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await AxiosHelper.getData('/admin/profile');
+            const response = await retryRequest(() => AxiosHelper.getData('/admin/profile'), 3);
             return response.data;
         } catch (error: any) {
             return rejectWithValue(error.response.data);

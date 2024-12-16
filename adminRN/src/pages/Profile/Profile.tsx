@@ -1,38 +1,47 @@
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { FILE_SIZE, SUPPORTED_FORMATS_IMAGE } from '../../constant/constant';
 import { TbShieldLock } from "react-icons/tb";
-import { MdOutlineCameraAlt } from "react-icons/md"
 import { LuUser } from "react-icons/lu";
+import { MdOutlineCameraAlt } from "react-icons/md"
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import PersonalInfo from './PersonalInfo'
 import AccountSettings from './AccountSettings'
 import AxiosHelper from '../../helper/AxiosHelper';
-import { toast } from 'react-toastify';
+import TabButton from '../../components/TabButton';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
+import { updateAdmin } from '../../redux/admin/adminSlice';
+import { toast } from 'react-toastify';
 
 const Profile = () => {
-  const admin = useSelector((state: RootState) => state.admin);
-
+  const dispatch = useDispatch();
+  const profile = useSelector((state: RootState) => state.admin?.data);
   const [activeTab, setActiveTab] = useState('personal')
-  const [avatarUrl, setAvatarUrl] = useState(admin?.data?.image)
-  const [isLoading, setIsLoading] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(false);
+  const [avatar, setAvatar]= useState("")
 
+  const handleImageUpload = async (file: any) => {
+    if (!SUPPORTED_FORMATS_IMAGE.includes(file.type)) {
+      toast.error('Unsupported Format.');
+    } else if (file.size >= FILE_SIZE) {
+      toast.error('Image File is too large.');
+    } else {
+      setIsImageLoading(true);
+      var formData = new FormData();
 
-  const handleImageUpload = async (file:any) => {
-    if (!file) return;
-    const formData = new FormData();
-    formData.append('image', file);
-    setIsLoading(true);
-    try {
-      const response = await AxiosHelper.postData('/admin/change-profile-image', formData, true);
-      toast.success(response.data.message);
-      setAvatarUrl(URL.createObjectURL(file));
-    } catch (error) {
-      // Error handled in AxiosHelper
-    } finally {
-      setIsLoading(false);
+      formData.append('image', file);
+      var { data } = await AxiosHelper.postData("admin/change-profile-image", formData, true);
+      if (data?.status === true) {
+        dispatch(updateAdmin(data?.data))
+        setAvatar(URL.createObjectURL(file))
+        toast.success(data?.message);
+        setIsImageLoading(false);
+      } else {
+        toast.error(data?.message);
+        setIsImageLoading(false);
+      }
     }
-  };
+  }
 
   return (
     <>
@@ -44,28 +53,38 @@ const Profile = () => {
             <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2">
               <div className="relative">
                 <img
-                  src={avatarUrl}
+                  src={avatar || profile?.image}
                   alt="Admin Avatar"
                   className="w-44 h-44 rounded-full object-cover border-4 border-white"
                 />
                 <label
                   htmlFor="avatar-upload"
-                  className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-lg cursor-pointer hover:bg-gray-100 transition-colors"
+                  className="absolute bottom-3 right-2 bg-white rounded-full p-2 shadow-lg cursor-pointer hover:bg-gray-100 transition-colors"
                 >
-                  <MdOutlineCameraAlt className="w-5 h-5 text-gray-600" />
+                  {!isImageLoading ? (
+                    <MdOutlineCameraAlt className="w-5 h-5 text-gray-600" />
+                  ) : (
+                    <>
+                      <div className="flex h-full items-center justify-center bg-white cursor-wait">
+                        <div className="h-5 w-5 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"></div>
+                      </div>
+                    </>
+                  )}
                   <input
-                    id="avatar-upload"
+                    id='avatar-upload'
+                    name='avatar-upload'
+                    placeholder='Choose file'
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={(e) => handleImageUpload(e?.target?.files[0])}
+                    onChange={(e: any) => handleImageUpload(e?.target?.files[0])}
                   />
                 </label>
               </div>
             </div>
           </div>
           <div className="pt-25 pb-8 px-8 text-black dark:text-white">
-            <h1 className="text-3xl font-bold text-center">John Doe</h1>
+            <h1 className="text-3xl font-bold text-center">{profile?.name}</h1>
             <p className="text-center mt-1">Super Admin</p>
             <div className="mt-8 flex justify-center space-x-4">
               <TabButton
@@ -93,26 +112,5 @@ const Profile = () => {
     </>
   );
 };
-
-function TabButton({ active, onClick, icon, children }: {
-  active: boolean
-  onClick: () => void
-  icon: React.ReactNode
-  children: React.ReactNode
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex items-center px-4 py-2 rounded-full transition-colors ${active
-        ? 'bg-indigo-500 text-white'
-        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-        }`}
-    >
-      {icon}
-      <span className="ml-2">{children}</span>
-    </button>
-  )
-}
-
 
 export default Profile;

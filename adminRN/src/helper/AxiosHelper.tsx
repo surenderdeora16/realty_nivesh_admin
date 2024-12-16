@@ -1,8 +1,6 @@
 import axios from "axios";
 import { toast } from 'react-toastify';
-import { store } from '../store';
-import { logdedOutAdmin } from '../redux/admin/adminSlice';
-// import { logdedOutUser } from '../redux/user/userSlice';
+// import { logoutAdmin } from "../store/slices/adminSlice";
 
 declare global {
     interface ImportMeta {
@@ -21,70 +19,27 @@ const commonHeaders = () => {
     axios.defaults.withCredentials = true;
 };
 
-let isRefreshing = false;
-let refreshSubscribers: ((token: string) => void)[] = [];
-
-const subscribeTokenRefresh = (cb: (token: string) => void) => {
-    refreshSubscribers.push(cb);
-};
-
-const onTokenRefreshed = (token: string) => {
-    refreshSubscribers.map(cb => cb(token));
-};
-
-const refreshAuthToken = async () => {
-    try {
-        const response = await axios.post('/admin/refresh-token');
-        const { token } = response.data;
-        localStorage.setItem('authToken', token);
-        return token;
-    } catch (error) {
-        throw error;
-    }
-};
 
 axios.interceptors.response.use(
     (response) => response,
-    async (error) => {
-        const originalRequest = error.config;
-        if (error.response.status === 401 && !originalRequest._retry) {
-            if (isRefreshing) {
-                return new Promise((resolve) => {
-                    subscribeTokenRefresh((token: string) => {
-                        originalRequest.headers['Authorization'] = 'Bearer ' + token;
-                        resolve(axios(originalRequest));
-                    });
-                });
-            }
-
-            originalRequest._retry = true;
-            isRefreshing = true;
-
-            try {
-                const newToken = await refreshAuthToken();
-                axios.defaults.headers.common['Authorization'] = 'Bearer ' + newToken;
-                originalRequest.headers['Authorization'] = 'Bearer ' + newToken;
-                onTokenRefreshed(newToken);
-                return axios(originalRequest);
-            } catch (refreshError) {
-                handleUnauthorized(error.response);
-                return Promise.reject(refreshError);
-            } finally {
-                isRefreshing = false;
-                refreshSubscribers = [];
-            }
+    async (error: any) => {
+        if (error.response?.status === 401) {
+            handleUnauthorized(error.response);
         }
         return Promise.reject(error);
     }
 );
 
-const handleUnauthorized = (response: any) => {
+
+const handleUnauthorized = async (response: any) => {
+    console.log("OK")
     if (response.data.message == 'Invalid Login Credentials..!!') {
         toast.error(response.data.message);
+        console.log('Invalid Login Credentials')
         return
     }
     toast.error('Session expired. Please login again.');
-    store.dispatch(logdedOutAdmin());
+    localStorage.removeItem('isLoggedIn');
     // store.dispatch(logdedOutUser());
     window.location.href = '/login';
 };
@@ -95,15 +50,19 @@ const errorHandler = (error: any) => {
     }
 
     if (error.response) {
-        if (error.response.status === 401) {
+        const { status, data } = error.response;
+
+        if (status === 401) {
             handleUnauthorized(error.response);
+        } else if (status >= 500) {
+            toast.error('Server error. Please try again later.');
         } else {
-            toast.error(error.response.data.message || 'An error occurred');
+            toast.error(data?.message || 'An error occurred.');
         }
     } else if (error.request) {
-        toast.error('No response received from the server');
+        toast.error('No response from the server. Please check your internet connection.');
     } else {
-        toast.error('Error setting up the request');
+        toast.error('An error occurred while processing your request.');
     }
 
     return Promise.reject(error);
