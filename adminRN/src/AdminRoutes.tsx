@@ -7,10 +7,16 @@ import Profile from './pages/Profile/Profile';
 import FormElements from './pages/Form/FormElements';
 import FormLayout from './pages/Form/FormLayout';
 import Chart from './pages/Chart';
-import Settings from './pages/Settings';
 import Tables from './pages/Tables';
 import Alerts from './pages/UiElements/Alerts';
 import Buttons from './pages/UiElements/Buttons';
+
+// Import our new settings components
+import SettingsPanel from './pages/Setting/SettingsPanel';
+import GeneralSettings from './pages/Setting/GeneralSettings';
+import SMSSettings from './pages/Setting/SMSSettings';
+import EmailSettings from './pages/Setting/EmailSettings';
+import SocialMediaSettings from './pages/Setting/SocialMediaSettings';
 
 function App() {
     return (
@@ -75,10 +81,27 @@ function App() {
                     element={
                         <>
                             <PageTitle title="Settings | TailAdmin - Tailwind CSS Admin Dashboard Template" />
-                            <Settings />
+                            <SettingsPanel />
                         </>
                     }
-                />
+                >
+                    <Route
+                        path="general-setting"
+                        element={<GeneralSettings />}
+                    />
+                    <Route
+                        path="sms-service"
+                        element={<SMSSettings />}
+                    />
+                    <Route
+                        path="email-service"
+                        element={<EmailSettings />}
+                    />
+                    <Route
+                        path="social-media"
+                        element={<SocialMediaSettings />}
+                    />
+                </Route>
                 <Route
                     path="/chart"
                     element={
@@ -107,27 +130,10 @@ function App() {
                     }
                 />
                 <Route path="*" element={<Navigate to="/" replace />} />
-                {/* <Route
-                    path="/auth/signin"
-                    element={
-                        <>
-                            <PageTitle title="Signin | TailAdmin - Tailwind CSS Admin Dashboard Template" />
-                            <SignIn />
-                        </>
-                    }
-                />
-                <Route
-                    path="/auth/signup"
-                    element={
-                        <>
-                            <PageTitle title="Signup | TailAdmin - Tailwind CSS Admin Dashboard Template" />
-                            <SignUp />
-                        </>
-                    }
-                /> */}
             </Routes>
         </AdminLayout>
     );
 }
 
 export default App;
+
