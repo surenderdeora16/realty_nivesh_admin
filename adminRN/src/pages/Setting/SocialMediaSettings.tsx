@@ -9,7 +9,7 @@ interface SocialSettingsData {
   [key: string]: string;
 }
 
-const SocialMediaSettings: React.FC<{ selectedWebsite: string }> = ({ selectedWebsite }) => {
+const SocialMediaSettings: React.FC<{ selectedWebsite?: string }> = ({ selectedWebsite }) => {
   const [initialValues, setInitialValues] = useState<SocialSettingsData>({});
   const [validationSchema, setValidationSchema] = useState<any>({});
 

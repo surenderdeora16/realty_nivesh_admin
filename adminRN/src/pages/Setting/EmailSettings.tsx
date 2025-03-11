@@ -9,7 +9,7 @@ interface EmailSettingsData {
   [key: string]: string;
 }
 
-const EmailSettings: React.FC<{ selectedWebsite: string }> = ({ selectedWebsite }) => {
+const EmailSettings: React.FC<{ selectedWebsite?: string }> = ({ selectedWebsite }) => {
   const [initialValues, setInitialValues] = useState<EmailSettingsData>({});
   const [validationSchema, setValidationSchema] = useState<any>({});
 

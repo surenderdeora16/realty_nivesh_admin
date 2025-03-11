@@ -8,7 +8,6 @@ import FormElements from './pages/Form/FormElements';
 import FormLayout from './pages/Form/FormLayout';
 import Chart from './pages/Chart';
 import Tables from './pages/Tables';
-import RoleManagement from './pages/Role/RoleManagement';
 import Alerts from './pages/UiElements/Alerts';
 import Buttons from './pages/UiElements/Buttons';
 
@@ -74,15 +73,6 @@ function App() {
                         <>
                             <PageTitle title="Tables | TailAdmin - Tailwind CSS Admin Dashboard Template" />
                             <Tables />
-                        </>
-                    }
-                />
-                <Route
-                    path="/role-manage"
-                    element={
-                        <>
-                            <PageTitle title="Tables | TailAdmin - Tailwind CSS Admin Dashboard Template" />
-                            <RoleManagement />
                         </>
                     }
                 />

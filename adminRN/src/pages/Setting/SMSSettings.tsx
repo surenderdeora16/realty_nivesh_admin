@@ -9,7 +9,7 @@ interface SMSSettingsData {
   [key: string]: string;
 }
 
-const SMSSettings: React.FC<{ selectedWebsite: string }> = ({ selectedWebsite }) => {
+const SMSSettings: React.FC<{ selectedWebsite?: string }> = ({ selectedWebsite }) => {
   const [initialValues, setInitialValues] = useState<SMSSettingsData>({});
   const [validationSchema, setValidationSchema] = useState<any>({});
 

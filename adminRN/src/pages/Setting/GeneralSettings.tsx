@@ -9,7 +9,7 @@ interface GeneralSettingsData {
   [key: string]: string | File | null;
 }
 
-const GeneralSettings: React.FC<{ selectedWebsite: string }> = ({ selectedWebsite }) => {
+const GeneralSettings: React.FC<{ selectedWebsite?: string }> = ({ selectedWebsite }) => {
   const [initialValues, setInitialValues] = useState<GeneralSettingsData>({});
   const [validationSchema, setValidationSchema] = useState<any>({});
 
