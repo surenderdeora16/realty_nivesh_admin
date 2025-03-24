@@ -1,7 +1,6 @@
 const authController = require('../../controllers/user/authController');
 const commonController = require('../../controllers/user/commonController');
 const bookingController = require('../../controllers/user/bookingController');
-const paymentController = require('../../controllers/paymentController');
 
 const { showValidationErrors, authCheck } = require('../../middelwares')
 const checkValid = require('../../middelwares/validator');

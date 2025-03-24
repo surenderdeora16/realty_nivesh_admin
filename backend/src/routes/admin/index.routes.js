@@ -1,7 +1,6 @@
 const authController = require('../../controllers/admin/authController')
 const generalSettingsController = require('../../controllers/admin/generalSettingsController')
 const discountCouponController = require('../../controllers/admin/discountCouponController');
-const retreatController = require('../../controllers/admin/retreatController');
 const usersController = require('../../controllers/admin/usersController');
 const CommonController = require('../../controllers/admin/CommonController');
 
@@ -36,8 +35,6 @@ router.delete('/toggle-status/:table/:id', generalSettingsController.toggleStatu
 router.delete('/delete-record/:table/:id', generalSettingsController.commonDelete);
 router.put('/update-settings', uploadSettings.fields([{ name: 'favicon', maxCount: 1 }, { name: 'logo', maxCount: 1 }, { name: 'footer_logo', maxCount: 1 }]), generalSettingsController.updateGeneralSetting)
 
-router.post('/retreat', retreatSettings.fields([{ name: 'image', maxCount: 1, isImage: true }, { name: 'itinerary', maxCount: 1, isDoc: true }]), checkValid('retreat'), showValidationErrors, retreatController.create)
-router.put('/retreat', retreatSettings.fields([{ name: 'image', maxCount: 1, isImage: true }, { name: 'itinerary', maxCount: 1, isDoc: true }]), checkValid('retreat'), showValidationErrors, retreatController.update)
 
 router.post('/discount-coupon', checkValid('discountCouponAdd'), showValidationErrors, discountCouponController.create)
 router.put('/discount-coupon', checkValid('discountCouponEdit'), showValidationErrors, discountCouponController.update)

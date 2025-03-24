@@ -32,7 +32,6 @@ axios.interceptors.response.use(
 
 
 const handleUnauthorized = async (response: any) => {
-    console.log("OK")
     if (response.data.message == 'Invalid Login Credentials..!!') {
         toast.error(response.data.message);
         console.log('Invalid Login Credentials')

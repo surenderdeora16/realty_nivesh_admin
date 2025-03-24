@@ -3,10 +3,9 @@ const { User } = require("../models");
 const { INVALID_ACCESS_TOKEN, INVALID_USER } = require("../languages/english");
 
 module.exports = async (req, res, next) => {
-
     try {
         let token = req.cookies.accessToken;
-        if (!token) return res.status(403).send({
+        if (!token) return res.status(401).send({
             status: false,
             message: "No token provided.!!",
             data: []
@@ -24,7 +23,7 @@ module.exports = async (req, res, next) => {
             'status': false,
             'message': "User account is blocked..!!",
             'data': []
-        });
+        });     
 
         req.user = user
         req.user_id = decoded.subject;

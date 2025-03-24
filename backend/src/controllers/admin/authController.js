@@ -10,22 +10,22 @@ const { getCookiesConfig } = require("../../helpers/formValidConfig");
 //         // Static user data
 //         const staticUser = {
 //             name: "Surender ADMIN",
-//             email: "admin@admin.com",
-//             mobile: "8741040289",
+//             email: "surender@gmail.com",
+//             mobile: "9879879870",
 //             password: "123456789",
 //             image: "user/avatar.png",
 //             status: true,
 //             deletedAt: null
 //         };
 
-//         let existingUser = await Admin.findOne({ mobile: staticUser.mobile, deletedAt: null });
-//         if (existingUser) {
-//             return res.status(400).json({
-//                 status: false,
-//                 message: "User already exists with this mobile number..!!",
-//                 data: []
-//             });
-//         }
+//         // let existingUser = await Admin.findOne({ mobile: staticUser.mobile, deletedAt: null });
+//         // if (existingUser) {
+//         //     return res.status(400).json({
+//         //         status: false,
+//         //         message: "User already exists with this mobile number..!!",
+//         //         data: []
+//         //     });
+//         // }
 
 //         // Hash the password
 //         staticUser.password = bcrypt.hashSync(staticUser.password, 10);
@@ -46,9 +46,17 @@ const { getCookiesConfig } = require("../../helpers/formValidConfig");
 exports.login = async (req, res) => {
     try {
         const { mobile, password, device_token, device_id } = req.body;
+      
+        //    const name = "Surender ADMIN"
+        //    const email = "surender@gmail.com"
+        //    const mobile = "9879879870"
+        //    const password = "123456789"
+        //    const image = "user/avatar.png",
+        //    const status = true,
+        //    const deletedAt = null
+    
 
         let user = await Admin.findOne({ mobile, deletedAt: null });
-        console.log("password", password)
         if (user && user.checkPassword(password)) {
             if (!user.status)
                 return res.json({

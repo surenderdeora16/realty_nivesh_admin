@@ -7,36 +7,60 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const cookieParser = require('cookie-parser');
-const paymentController = require('./src/controllers/paymentController');
 
-// create new express app and save it as "app"
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+// const csurf = require("csurf");
+const winston = require("winston");
+
 const app = express();
 
-app.use(cors({
-    origin: "http://localhost:5173",
-    credentials: true
-}));
+// Logger setup
+const logger = winston.createLogger({
+    transports: [new winston.transports.File({ filename: "logs/error.log", level: "error" })],
+});
 
-// parse requests of content-type - application/json
+
+
+// CORS configuration
+const allowedOrigins = [process.env.FRONTEND_URL || "http://localhost:5173"];
+app.use(
+    cors({
+        origin: (origin, callback) => {
+            if (!origin || allowedOrigins.includes(origin)) callback(null, true);
+            else callback(new Error("Not allowed by CORS"));
+        },
+        credentials: true,
+    })
+);
+
+// Security middlewares
+app.use(helmet());
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 app.use(express.json({ type: "application/json", limit: "50mb" }));
-
-// parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+app.use(cookieParser({}));
+// app.use(csurf({ cookie: { httpOnly: true, secure: process.env.IS_HTTPS === "true" } }));
 
-// parse cookie from request.
-app.use(cookieParser({})); // secure: false, domain: undefined 
 
-// Serve Static Files
+// Static Files
 app.use("/uploads", express.static('public/uploads'));
 app.all("/uploads/*", (req, res) => res.sendFile(path.resolve(__dirname, './public/uploads/img-not-found.png')));
 
-// routes
+
+// Routes
 app.get("/", async (req, res) => res.json({ status: true, message: "Api Working fine..!!" }));
-app.post('/payment-success', paymentController.handleSuccess);
-app.post('/payment-error', paymentController.handleError);
 app.use('/api-v1', require('./src/routes/index.routes'));
 
-// Listen both http & https ports
+
+// Error handling
+app.use((err, req, res, next) => {
+    logger.error(`${req.method} ${req.url} - ${err.message}`);
+    res.status(500).json({ status: false, message: "Something went ++ wrong.", data: [] });
+});
+
+
+
 const PORT = parseInt(process.env.PORT) || 9000;
 const httpServer = http.createServer(app);
 
